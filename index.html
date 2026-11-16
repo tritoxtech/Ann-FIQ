@@ -331,7 +331,7 @@ function analyze(raw,filename){
   return null;
  }
  const six=onePayTotal(auto),annual=premium(home,12);
- const hot=(monthly!=null&&monthly<200)||(annual!=null&&annual<2000);
+ const hot=(monthly!=null&&monthly<200)||(annual!=null&&annual<=1200);
  const driverText=auto?.details.join('\n').match(/^Drivers[ \t]*\n([\s\S]*?)(?=^Discounts|^Payment plans|$)/im)?.[1]||'';
  const driverCount=auto?Number(pages.join('\n').match(/\bDrivers[ \t]+(\d+)\b/i)?.[1])||[...driverText.matchAll(/^[^\n,]+,\s*\d{1,3}\s+Included\b/gim)].length||null:null;
  const prepared=pages.join('\n').match(/Prepared on\s+(\d{1,2})\/(\d{1,2})\/(\d{2}|\d{4})\b/i);
