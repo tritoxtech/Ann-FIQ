@@ -335,8 +335,8 @@ function analyze(raw,filename){
   for(const label of ['Roof','Fence','Carpet','Personal property']){
    const m=values(b,new RegExp('^'+label+' valuation[ \\t:]+([^\\n]+)(?:\\n(cost\\b[^\\n]*))?','im'));
    const wording=m?[m[1],m[2]].filter(Boolean).join(' '):null;
-   const expected=label==='Roof'?'Scheduled Payment':'Replacement Cost';
-   const pattern=label==='Roof'?/^Scheduled\s+Payments?$/i:/^Replacement(?:\s+Cost)?(?:\s+Value)?$/i;
+   const expected=label==='Roof'?'Scheduled':'Replacement Cost';
+   const pattern=label==='Roof'?/^Scheduled\b/i:/^Replacement(?:\s+Cost)?(?:\s+Value)?$/i;
    add('Home QC',label+' valuation',expected,wording,wording==null?null:pattern.test(wording.trim()));
   }
   amountCheck('Home QC','Personal Liability',100000,values(b,/^Personal liability[ \t]+\$\s*([\d,]+)/im));
