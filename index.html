@@ -290,6 +290,10 @@ function analyze(raw,filename){
    for(const [label,val] of [['Comprehensive',comp],['Collision',coll]])if(active(val)){
     amountCheck('Vehicle Coverage',v.name+' '+label+' deductible',500,val.match(/\$\s*([\d,]+(?:\.\d+)?)/));
    }
+   if(b.carrier!=='Bristol West'&&active(coll)){
+    const glass=v.text.match(/^Glass\s+deductible\s+buyback[ \t:]*([^\n]*)/im);
+    add('Vehicle Coverage',v.name+' Glass deductible buyback','Included when Collision is included',glass?glass[1].trim()||'Included':'Not listed',glass?(!glass[1].trim()||active(glass[1])):false);
+   }
    if(!active(coll)){
     const match=v.text.match(umpd)||policy.match(umpd);
     const vump=match?.[1]?.trim();
@@ -309,9 +313,10 @@ function analyze(raw,filename){
   }else{
    add('Auto Discounts','Homeowner','Not included',owner==null?null:owner?'Included':'Not listed',owner==null?null:!owner);
   }
-  const glassSelected=b.summary.some(page=>[...page.matchAll(/^Additional selected vehicle coverages\b([\s\S]*?)(?=^Applied discounts\b|^Page \d+\b|^\s*$|(?![\s\S]))/gim)].some(m=>/\bGlass\s+deductible\s+buyback\b/i.test(m[1]))) ||
-   b.details.some(page=>/^Glass\s+deductible\s+buyback\s*[:–-]?\s*(?:Included|Yes)\b/im.test(page));
-  if(glassSelected)add('Auto Coverage','Glass deductible buyback','Not included','Included',false);
+  const med=values(b,/^(?:Medical\s+payments?(?:\s+coverage)?|Med(?:ical)?\s+pay)[ \t:]+([^\n]+)/im);
+  if(med&&active(med[1]))amountCheck('Auto Coverage','Medical Payments',5000,med[1].match(/\$\s*([\d,]+(?:\.\d+)?)/));
+  const signal=/\bSignal(?:\s+by\s+Farmers)?\b/i.test(autoDiscounts||'')||b.details.some(page=>/^Signal(?:\s+by\s+Farmers)?[ \t:]+(?:Included|Yes)\b/im.test(page));
+  add('Auto Discounts','Signal by Farmers','Not included',signal?'Included':'Not listed',signal?false:autoDiscounts!=null||b.details.length>0?true:null);
   add('Auto Coverage','Accident Forgiveness','Not included',hasForgiveness?'Included':'Not listed',hasForgiveness?false:autoDiscounts!=null||b.details.length>0?true:null);
  }
  let dwelling=null;
@@ -319,7 +324,7 @@ function analyze(raw,filename){
   const b=blocks.home;
   dwelling=money(values(b,/^Dwelling[ \t]+\$\s*([\d,]+)/im)?.[1]);
   const pkg=values(b,/^Product[ \t]+(?:Farmers\s+)?Home\s*\(([^)\n]+)\)/im)||values(b,/^(?:Package|Special limits)[ \t:]+([^\n]+)/im);
-  add('Home QC','Package','Enhanced',pkg?.[1],pkg?/^Enhanced\b/i.test(pkg[1]):null);
+  add('Home QC','Package','Standard',pkg?.[1],pkg?/^Standard\b/i.test(pkg[1]):null);
   for(const [label,target] of [['Separate Structures',5],['Personal Property',40],['Loss of Use',20]]){
    const pattern=new RegExp('^'+label+'[ \\t]+\\$\\s*([\\d,]+)(?:\\s*\\((\\d+(?:\\.\\d+)?)\\s*%[^\\n]*)?','im');
    const m=values(b,pattern), amount=money(m?.[1]);
