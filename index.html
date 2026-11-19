@@ -252,7 +252,7 @@ function analyze(raw,filename){
     const body=p.slice(m.index+m[0].length).split(/(?:^Payment plans?\b|^Page \d+\b|^Quote #\b|^\*|^Prepared on\b)/im)[0].trim();
     if(body)sections.push(body);
    }
-   if(sections.length)return sections.join('\n');
+   if(sections.length)return sections.join('\n').replace(/[\u200B-\u200D\uFEFF\u00AD]/g,'').replace(/\s+/g,' ').trim();
   }
   return null;
  };
@@ -295,6 +295,10 @@ function analyze(raw,filename){
    for(const [label,val] of [['Comprehensive',comp],['Collision',coll]])if(active(val)){
     amountCheck('Vehicle Coverage',v.name+' '+label+' deductible',500,val.match(/\$\s*([\d,]+(?:\.\d+)?)/));
    }
+   const loss=v.text.match(/^Collision\s+plus\s*\/\s*loss\s+of\s+use[ \t:]+([^\n]+)/im)?.[1]?.trim();
+   if(active(loss))add('Vehicle Coverage',v.name+' Collision plus/loss of use','K3/K4',loss,/^K3\s*\/\s*K4$/i.test(loss));
+   const rental=v.text.match(/^Rental\s+(?:reimbursement|coverage)[ \t:]+([^\n]+)/im)?.[1]?.trim();
+   if(active(rental))add('Vehicle Coverage',v.name+' Rental reimbursement','Not included',rental,false);
    if(b.carrier!=='Bristol West'&&active(coll)){
     const glass=v.text.match(/^Glass\s+deductible\s+buyback[ \t:]*([^\n]*)/im);
     add('Vehicle Coverage',v.name+' Glass deductible buyback','Included when Collision is included',glass?glass[1].trim()||'Included':'Not listed',glass?(!glass[1].trim()||active(glass[1])):false);
