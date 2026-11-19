@@ -202,9 +202,9 @@ function pageText(items){
  const positioned=items.filter(i=>i.str?.trim()).map(i=>({x:i.transform[4],y:i.transform[5],s:i.str.trim()})).sort((a,b)=>b.y-a.y||a.x-b.x);
  // Keep the payment sidebar out of the main Applied discounts list.
  const discountHeaders=positioned.filter(i=>/^Applied discounts$/i.test(i.s));
- const leftHeader=discountHeaders.find(i=>discountHeaders.some(j=>j.x-i.x>150&&Math.abs(j.y-i.y)<12));
- const sidebar=leftHeader&&discountHeaders.find(j=>j.x-leftHeader.x>150&&Math.abs(j.y-leftHeader.y)<12);
- const discountItems=sidebar?positioned.filter(i=>!(i.x>=sidebar.x-4&&i.y<=Math.max(leftHeader.y,sidebar.y)+3&&i.y>=Math.min(leftHeader.y,sidebar.y)-110)):positioned;
+ const leftHeader=discountHeaders.find(i=>discountHeaders.some(j=>j.x-i.x>150));
+ const sidebar=leftHeader&&discountHeaders.find(j=>j.x-leftHeader.x>150);
+ const discountItems=sidebar?positioned.filter(i=>!(i.x>=sidebar.x-4&&i.y<=leftHeader.y+3&&i.y>=leftHeader.y-110)):positioned;
  const rows=[];for(const i of discountItems){const row=rows.at(-1);if(row&&Math.abs(row.y-i.y)<=2.5)row.items.push(i);else rows.push({y:i.y,items:[i]});}
  return rows.map(row=>row.items.sort((a,b)=>a.x-b.x).map(i=>i.s).join(' ')).join('\n');
 }
